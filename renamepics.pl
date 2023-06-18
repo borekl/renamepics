@@ -51,7 +51,7 @@ foreach my $image (@images) {
   my $ext = $1;
 
   # get image index
-  $image->basename =~ /-(\d+)/;
+  $image->basename =~ /[-_](\d+)/;
   my $idx = $1;
   die 'Failed at ' . $image->basename if length($idx) != 4;
 

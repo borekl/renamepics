@@ -5,7 +5,7 @@ use warnings;
 use experimental 'say';
 
 use Image::ExifTool qw(:Public);
-use Path::Tiny qw(cwd);
+use Path::Tiny qw(cwd path);
 use Time::Moment;
 
 # we should process images with these suffixes
@@ -13,6 +13,17 @@ my @extensions = qw(jpg cr2 cr3);
 
 # get parent directory
 my $parent = cwd->parent;
+
+# processed directory can optionally be supplied on the command-line
+if($ARGV[0]) {
+  my $userdir = path $ARGV[0];
+  die "'$userdir' is not a directory" unless $userdir->is_dir;
+  $parent = $userdir;
+}
+
+# verify that _incoming subdirectory exists
+my $incoming = $parent->child('_incoming');
+die "Directory '$incoming' does not exists" unless $incoming->is_dir;
 
 # create list of images we will operate on
 my @images = grep {
@@ -23,7 +34,7 @@ my @images = grep {
   $f;
 } grep {
   !$_->is_dir;
-} cwd->children;
+} $incoming->children;
 
 # iterate over images
 foreach my $image (@images) {
@@ -40,7 +51,7 @@ foreach my $image (@images) {
   my $ext = $1;
 
   # get image index
-  $image->basename =~ /(\d+)/;
+  $image->basename =~ /-(\d+)/;
   my $idx = $1;
   die 'Failed at ' . $image->basename if length($idx) != 4;
 
